@@ -15,31 +15,51 @@
 
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body {% if current_user.is_authenticated %}data-user-id="{{ current_user.id }}"{% endif %} aria-label="Keyword Based Search Engine Application">
+
+<!-- Skip to main content link for screen readers -->
+<a href="#main-content" class="visually-hidden visually-hidden-focusable skip-link">Skip to main content</a>
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand navbar-dark bg-primary bg-gradient px-4 shadow-sm">
+<nav class="navbar navbar-expand navbar-dark bg-primary bg-gradient px-4 shadow-sm" aria-label="Main navigation">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="{{ url_for('search.home') }}">🔍 Keyword Based Search Engine</a>
+        <a class="navbar-brand fw-bold" href="{{ url_for('search.home') }}" aria-label="Keyword Based Search Engine Home">
+            <span aria-hidden="true">🔍</span> Keyword Based Search Engine
+        </a>
 
         <div class="ms-auto">
             {% if current_user.is_authenticated %}
                 <div class="dropdown">
-                    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        👤 {{ current_user.username }}
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false"
+                            aria-haspopup="true" aria-label="User menu">
+                        <span aria-hidden="true">👤</span> {{ current_user.username }}
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow">
-                        <li><a class="dropdown-item" href="{{ url_for('upload.upload') }}">📤 Upload Files</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">🚪 Logout</a></li>
+                    <ul class="dropdown-menu dropdown-menu-end shadow" role="menu">
+                        <li role="none">
+                            <a class="dropdown-item" href="{{ url_for('upload.upload') }}" role="menuitem">
+                                <span aria-hidden="true">📤</span> Upload Files
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider" role="separator"></li>
+                        <li role="none">
+                            <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}" role="menuitem">
+                                <span aria-hidden="true">🚪</span> Logout
+                            </a>
+                        </li>
                     </ul>
                 </div>
             {% else %}
-                <a class="btn btn-outline-light btn-sm me-2" href="{{ url_for('auth.login') }}">Login / Register</a>
+                <a class="btn btn-outline-light btn-sm me-2" href="{{ url_for('auth.login') }}"
+                   aria-label="Login or register to access more features">
+                    Login / Register
+                </a>
             {% endif %}
         </div>
     </div>
 </nav>
+
+<main id="main-content" tabindex="-1">
 
 {% block content %}{% endblock %}
 

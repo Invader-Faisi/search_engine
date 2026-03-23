@@ -2,9 +2,517 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Admin Dashboard - Keyword Search Engine</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .badge-admin {
+            background-color: #764ba2;
+        }
+        .badge-user {
+            background-color: #667eea;
+        }
+        .activity-item {
+            border-left: 3px solid #667eea;
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
 <body>
+    {% extends "base.html" %}
 
+    {% block content %}
+    <div class="admin-header">
+        <div class="container">
+            <h1><i class="fas fa-cogs me-2"></i>Admin Dashboard</h1>
+            <p class="lead">Manage users, monitor activities, and oversee system operations</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card text-white bg-primary">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">Total Users</h5>
+                                <h2 class="mb-0">{{ total_users }}</h2>
+                            </div>
+                            <i class="fas fa-users stat-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card text-white bg-success">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">Total Documents</h5>
+                                <h2 class="mb-0">{{ total_documents }}</h2>
+                            </div>
+                            <i class="fas fa-file-alt stat-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card text-white bg-warning">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">Recent Activity (7d)</h5>
+                                <h2 class="mb-0">{{ recent_activity }}</h2>
+                            </div>
+                            <i class="fas fa-chart-line stat-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card text-white bg-info">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">System Status</h5>
+                                <h2 class="mb-0">Online</h2>
+                            </div>
+                            <i class="fas fa-server stat-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Users Management -->
+            <div class="col-lg-6">
+                <div class="table-container">
+                    <h4><i class="fas fa-users me-2"></i>User Management</h4>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Documents</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users %}
+                                <tr>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        <span class="badge {% if user.role == 'admin' %}badge-admin{% else %}badge-user{% endif %}">
+                                            {{ user.role }}
+                                        </span>
+                                    </td>
+                                    <td>{{ user.documents|length }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editUser({{ user.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        {% if user.id != current_user.id %}
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteUser({{ user.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <button class="btn btn-primary" onclick="loadAllUsers()">
+                        <i class="fas fa-sync me-1"></i>Load All Users
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Documents -->
+            <div class="col-lg-6">
+                <div class="table-container">
+                    <h4><i class="fas fa-file-alt me-2"></i>Recent Documents</h4>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Filename</th>
+                                    <th>Uploaded By</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doc in recent_documents %}
+                                <tr>
+                                    <td>{{ doc.filename[:30] }}{% if doc.filename|length > 30 %}...{% endif %}</td>
+                                    <td>{{ doc.uploader.username if doc.uploader else 'Unknown' }}</td>
+                                    <td>{{ doc.upload_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('search.view_document') }}?path={{ doc.filepath }}" 
+                                           class="btn btn-sm btn-outline-info" target="_blank">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Backup Management -->
+                <div class="table-container mt-4">
+                    <h4><i class="fas fa-database me-2"></i>Backup Management</h4>
+                    <div class="mb-3">
+                        <button class="btn btn-outline-primary btn-sm me-2" onclick="runBackup()">
+                            <i class="fas fa-plus me-1"></i>Create New Backup
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="cleanupBackups()">
+                            <i class="fas fa-broom me-1"></i>Cleanup Old Backups
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Backup Name</th>
+                                    <th>Size</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="backupList">
+                                <!-- Backup list will be loaded dynamically -->
+                                <tr>
+                                    <td colspan="4" class="text-center">Loading backups...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- System Actions -->
+                <div class="table-container mt-4">
+                    <h4><i class="fas fa-tools me-2"></i>System Actions</h4>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-warning" onclick="reindexAll()">
+                            <i class="fas fa-sync-alt me-1"></i>Reindex All Documents
+                        </button>
+                        <button class="btn btn-outline-info" onclick="viewActivities()">
+                            <i class="fas fa-history me-1"></i>View Activity Log
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block extra_js %}
+    <script>
+        // Get current user ID from data attribute
+        const currentUserId = parseInt(document.body.getAttribute('data-user-id') || '0');
+        
+        function loadAllUsers() {
+            fetch('/admin/users')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.querySelector('#usersTable tbody');
+                    tbody.innerHTML = '';
+                    data.users.forEach(user => {
+                        const row = document.createElement('tr');
+                        let deleteButton = '';
+                        if (user.id !== currentUserId) {
+                            deleteButton = `<button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>`;
+                        }
+                        row.innerHTML = `
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>
+                                <span class="badge ${user.role === 'admin' ? 'badge-admin' : 'badge-user'}">
+                                    ${user.role}
+                                </span>
+                            </td>
+                            <td>${user.document_count}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="editUser(${user.id})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                ${deleteButton}
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    toastr.success('Loaded all users');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toastr.error('Failed to load users');
+                });
+        }
+
+        function editUser(userId) {
+            const newRole = prompt('Enter new role (admin/user):', 'user');
+            if (newRole && ['admin', 'user'].includes(newRole.toLowerCase())) {
+                fetch('/admin/users/' + userId, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({role: newRole.toLowerCase()})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    toastr.success('User role updated');
+                    loadAllUsers();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toastr.error('Failed to update user');
+                });
+            }
+        }
+
+        function deleteUser(userId) {
+            if (confirm('Are you sure you want to delete this user? All their documents will also be deleted.')) {
+                fetch('/admin/users/' + userId, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        toastr.error(data.error);
+                    } else {
+                        toastr.success('User deleted successfully');
+                        loadAllUsers();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toastr.error('Failed to delete user');
+                });
+            }
+        }
+
+        function runBackup() {
+            toastr.info('Creating backup...');
+            fetch('/admin/backup', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: 'full'})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(`Backup created: ${data.filename}`);
+                    loadBackups();
+                } else {
+                    toastr.error(`Backup failed: ${data.message || 'Unknown error'}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('Failed to create backup');
+            });
+        }
+
+        function loadBackups() {
+            fetch('/admin/backup')
+            .then(response => response.json())
+            .then(data => {
+                const backupList = document.getElementById('backupList');
+                if (!backupList) return;
+                
+                backupList.innerHTML = '';
+                if (data.backups && data.backups.length > 0) {
+                    data.backups.forEach(backup => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${backup.name}</td>
+                            <td>${backup.size}</td>
+                            <td>${backup.created}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-success" onclick="downloadBackup('${backup.name}')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning" onclick="restoreBackup('${backup.name}')">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteBackup('${backup.name}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        backupList.appendChild(row);
+                    });
+                } else {
+                    backupList.innerHTML = '<tr><td colspan="4" class="text-center">No backups found</td></tr>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading backups:', error);
+            });
+        }
+
+        function downloadBackup(backupName) {
+            window.open(`/admin/backup/download/${encodeURIComponent(backupName)}`, '_blank');
+        }
+
+        function restoreBackup(backupName) {
+            if (!confirm(`Are you sure you want to restore from backup "${backupName}"? This will overwrite current data.`)) {
+                return;
+            }
+            
+            toastr.info(`Restoring from ${backupName}...`);
+            fetch(`/admin/backup/${encodeURIComponent(backupName)}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(`Backup restored successfully: ${data.message}`);
+                    loadBackups();
+                } else {
+                    toastr.error(`Restore failed: ${data.message || 'Unknown error'}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('Failed to restore backup');
+            });
+        }
+
+        function deleteBackup(backupName) {
+            if (!confirm(`Are you sure you want to delete backup "${backupName}"?`)) {
+                return;
+            }
+            
+            fetch(`/admin/backup/${encodeURIComponent(backupName)}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(`Backup deleted: ${data.message}`);
+                    loadBackups();
+                } else {
+                    toastr.error(`Delete failed: ${data.message || 'Unknown error'}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('Failed to delete backup');
+            });
+        }
+
+        function cleanupBackups() {
+            const maxBackups = prompt('Enter maximum number of backups to keep:', '10');
+            if (!maxBackups || isNaN(maxBackups)) return;
+            
+            fetch('/admin/backup/cleanup', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({max_backups: parseInt(maxBackups)})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(`Cleanup completed: ${data.message}`);
+                    loadBackups();
+                } else {
+                    toastr.error(`Cleanup failed: ${data.message || 'Unknown error'}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('Failed to cleanup backups');
+            });
+        }
+
+        function reindexAll() {
+            toastr.info('Reindexing feature will be implemented soon');
+        }
+
+        function viewActivities() {
+            fetch('/admin/activities')
+                .then(response => response.json())
+                .then(data => {
+                    let activityHtml = '<h5>Recent Activities</h5>';
+                    data.activities.forEach(activity => {
+                        activityHtml +=
+                            '<div class="activity-item">' +
+                            '<strong>' + activity.user + '</strong> ' + activity.action + ' ' +
+                            '<em>' + activity.document + '</em><br>' +
+                            '<small class="text-muted">' + activity.timestamp + '</small>' +
+                            '</div>';
+                    });
+                    
+                    // Show in modal
+                    const modal = document.createElement('div');
+                    modal.className = 'modal fade';
+                    modal.innerHTML =
+                        '<div class="modal-dialog modal-lg">' +
+                        '<div class="modal-content">' +
+                        '<div class="modal-header">' +
+                        '<h5 class="modal-title">Activity Log</h5>' +
+                        '<button type="button" class="btn-close" data-bs-dismiss="modal"></button>' +
+                        '</div>' +
+                        '<div class="modal-body">' + activityHtml + '</div>' +
+                        '</div>' +
+                        '</div>';
+                    document.body.appendChild(modal);
+                    const bsModal = new bootstrap.Modal(modal);
+                    bsModal.show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toastr.error('Failed to load activities');
+                });
+        }
+
+        // Load backups on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBackups();
+        });
+    </script>
+    {% endblock %}
 </body>
 </html>

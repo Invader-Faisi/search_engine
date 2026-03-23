@@ -3,47 +3,57 @@
 {% block title %}Upload Files{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-5" role="main" aria-label="Upload documents section">
 
     <!-- Header -->
     <div class="text-center mb-5">
-        <h1 class="display-5 fw-bold text-primary">📤 Upload Documents</h1>
-        <p class="text-muted">Upload and manage your searchable documents</p>
+        <h1 class="display-5 fw-bold text-primary" id="upload-heading">
+            <span aria-hidden="true">📤</span> Upload Documents
+        </h1>
+        <p class="text-muted" id="upload-description">
+            Upload and manage your searchable documents. Supported formats: CSV, TXT, DOCX, PDF.
+        </p>
     </div>
 
     <div class="row g-4">
 
         <!-- Upload Card -->
         <div class="col-lg-4">
-            <div class="card shadow-lg border-0 h-100">
+            <div class="card shadow-lg border-0 h-100" role="region" aria-labelledby="upload-card-heading">
                 <div class="card-header bg-white border-0 pt-4 pb-0">
-                    <h4 class="fw-bold text-secondary">📁 New Upload</h4>
+                    <h2 id="upload-card-heading" class="fw-bold text-secondary h4">
+                        <span aria-hidden="true">📁</span> New Upload
+                    </h2>
                 </div>
                 <div class="card-body p-4">
-                    <form method="POST" enctype="multipart/form-data">
+                    <form method="POST" enctype="multipart/form-data" aria-labelledby="upload-card-heading">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Select File</label>
+                            <label for="file_input" class="form-label fw-semibold">Select File</label>
                             <div class="input-group input-group-lg">
-                                <input type="file" name="file" class="form-control" required>
+                                <input id="file_input" type="file" name="file" class="form-control" required
+                                       aria-required="true" aria-describedby="file_help">
                             </div>
-                            <div class="form-text text-muted">Supported: CSV, TXT, Docx, PDF</div>
+                            <div id="file_help" class="form-text text-muted">
+                                Supported file types: CSV, TXT, Docx, PDF. Maximum file size: 10MB.
+                            </div>
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg fw-bold">
-                                🚀 Upload File
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold"
+                                    aria-label="Upload selected file">
+                                <span aria-hidden="true">🚀</span> Upload File
                             </button>
                         </div>
                     </form>
 
                     <!-- Upload Stats -->
-                    <div class="row text-center mt-4 pt-3 border-top">
+                    <div class="row text-center mt-4 pt-3 border-top" role="status" aria-live="polite">
                         <div class="col-6">
-                            <h5 class="fw-bold text-primary mb-0">{{ files|length }}</h5>
+                            <h3 class="fw-bold text-primary mb-0 h5">{{ files|length }}</h3>
                             <small class="text-muted">Total Files</small>
                         </div>
                         <div class="col-6">
-                            <h5 class="fw-bold text-success mb-0">{{ (files|sum(attribute='size') / 1024 / 1024)|round(2) }} MB</h5>
+                            <h3 class="fw-bold text-success mb-0 h5">{{ (files|sum(attribute='size') / 1024 / 1024)|round(2) }} MB</h3>
                             <small class="text-muted">Storage Used</small>
                         </div>
                     </div>
@@ -53,47 +63,58 @@
 
         <!-- Files Table -->
         <div class="col-lg-8">
-            <div class="card shadow-lg border-0">
+            <div class="card shadow-lg border-0" role="region" aria-labelledby="files-table-heading">
                 <div class="card-header bg-white border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
-                    <h4 class="fw-bold text-secondary">📋 Uploaded Files</h4>
-                    <span class="badge bg-primary rounded-pill">{{ files|length }} files</span>
+                    <h2 id="files-table-heading" class="fw-bold text-secondary h4">
+                        <span aria-hidden="true">📋</span> Uploaded Files
+                    </h2>
+                    <span class="badge bg-primary rounded-pill" aria-label="{{ files|length }} files">
+                        {{ files|length }} files
+                    </span>
                 </div>
                 <div class="card-body p-0">
                     {% if files %}
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
+                        <table class="table table-hover align-middle mb-0" aria-labelledby="files-table-heading">
+                            <caption class="visually-hidden">List of uploaded files with details</caption>
                             <thead class="table-light">
                                 <tr>
-                                    <th class="ps-4">#</th>
-                                    <th>📄 Filename</th>
-                                    <th>📊 Size</th>
-                                    <th>📅 Date</th>
+                                    <th scope="col" class="ps-4">#</th>
+                                    <th scope="col">
+                                        <span aria-hidden="true">📄</span> Filename
+                                    </th>
+                                    <th scope="col">
+                                        <span aria-hidden="true">📊</span> Size
+                                    </th>
+                                    <th scope="col">
+                                        <span aria-hidden="true">📅</span> Date
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for file in files %}
                                     <tr>
-                                        <td class="ps-4 fw-semibold text-muted">{{ loop.index }}</td>
+                                        <th scope="row" class="ps-4 fw-semibold text-muted">{{ loop.index }}</th>
                                         <td>
                                             <span class="fw-semibold text-dark">{{ file.name }}</span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-light text-dark border">
+                                            <span class="badge bg-light text-dark border" aria-label="{{ (file.size / 1024)|round(2) }} kilobytes">
                                                 {{ (file.size / 1024)|round(2) }} KB
                                             </span>
                                         </td>
                                         <td>
-                                            <small class="text-muted">{{ file.date }}</small>
+                                            <time datetime="{{ file.date }}" class="text-muted">{{ file.date }}</time>
                                         </td>
                                     </tr>
-                                    {% endfor %}
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
                     {% else %}
-                    <div class="text-center py-5">
-                        <div class="display-1 text-muted mb-3">📂</div>
-                        <h5 class="text-muted">No files uploaded yet</h5>
+                    <div class="text-center py-5" role="status" aria-live="polite">
+                        <div class="display-1 text-muted mb-3" aria-hidden="true">📂</div>
+                        <h3 class="text-muted h5">No files uploaded yet</h3>
                         <p class="text-muted">Upload your first document to get started</p>
                     </div>
                     {% endif %}

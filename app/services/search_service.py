@@ -2,6 +2,7 @@ from whoosh.index import open_dir
 from whoosh.qparser import QueryParser, MultifieldParser
 from whoosh.highlight import Formatter, get_text
 from flask import current_app
+from app.services.cache_service import cached_search
 
 
 class GreenBoldFormatter(Formatter):
@@ -10,7 +11,8 @@ class GreenBoldFormatter(Formatter):
         return f'<span class="highlight-keyword">{ttext}</span>'
 
 
-def search_documents(query_str):
+def _perform_search(query_str):
+    """Actual search function (without caching)"""
     index_dir = current_app.config['WHOOSH_INDEX']
     ix = open_dir(index_dir)
 
@@ -38,3 +40,24 @@ def search_documents(query_str):
             })
 
     return results_list
+
+
+def search_documents(query_str):
+    """Search documents with caching"""
+    if not query_str or not query_str.strip():
+        return []
+    
+    # Use cached search
+    return cached_search(_perform_search, query_str.strip())
+
+
+def clear_search_cache():
+    """Clear search cache"""
+    from app.services.cache_service import clear_search_cache as clear_cache
+    clear_cache()
+
+
+def get_search_cache_stats():
+    """Get search cache statistics"""
+    from app.services.cache_service import get_cache_stats
+    return get_cache_stats()

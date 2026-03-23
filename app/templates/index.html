@@ -3,8 +3,8 @@
 {% block title %}Keyword Based Search Engine{% endblock %}
 
 {% block content %}
-<div class="search-wrapper my-5">
-    <div class="logo-text text-center mb-4">
+<div class="search-wrapper my-5" role="search" aria-label="Search interface">
+    <div class="logo-text text-center mb-4" aria-hidden="true">
         <span class="text-primary">K</span><span class="text-danger">e</span><span class="text-warning">y</span><span class="text-primary">w</span><span class="text-success">o</span><span class="text-danger">r</span><span class="text-primary">d</span>
         <span class="text-success">Based</span>
         <span class="text-warning">Search</span>
@@ -12,38 +12,65 @@
     </div>
 
     <div class="search-container text-center mx-auto">
-        <div id="highlighted_text" class="input-style backdrop"></div>
+        <div id="highlighted_text" class="input-style backdrop" role="status" aria-live="polite" aria-atomic="true">
+            <!-- Spellcheck suggestions will appear here -->
+        </div>
 
-        <form method="POST" class="text-center w-100">
+        <form method="POST" class="text-center w-100" aria-label="Search form">
+            <label for="search_input" class="visually-hidden">Search keywords or phrases</label>
             <input id="search_input" class="input-style" type="text" name="query"
-                   placeholder="Enter keyword or phrase..." autocomplete="off" required>
+                   placeholder="Enter keyword or phrase..." autocomplete="off" required
+                   aria-required="true" aria-describedby="search_help">
 
             <div class="mt-4">
-                <button type="submit" class="btn btn-light border px-4 me-2">Search</button>
-                <button type="button" class="btn btn-light border px-4" onclick="clearSearch()">Clear</button>
+                <button type="submit" class="btn btn-light border px-4 me-2" aria-label="Search documents">
+                    Search
+                </button>
+                <button type="button" class="btn btn-light border px-4" onclick="clearSearch()" aria-label="Clear search input">
+                    Clear
+                </button>
+            </div>
+            <div id="search_help" class="visually-hidden">
+                Press Enter to search or use the Search button. Right-click on text for spellcheck suggestions.
             </div>
         </form>
     </div>
 </div>
 
 <div class="container mt-5" style="max-width: 800px;">
-    <h3 class="mb-4">Results:</h3>
+    <h2 class="mb-4" id="results-heading">Search Results</h2>
     {% if results %}
-        {% for r in results %}
-        <div class="card mb-4 border-0 shadow-sm">
-            <div class="card-body">
-                <h4 class="text-primary mb-1">{{ r.title }}</h4>
-                <p class="text-muted small mb-2">Relevance Score: {{ r.score }}</p>
-                <p class="card-text result-snippet">{{ r.snippet|safe }}</p>
-                <div class="btn-group mt-2">
-                    <a href="{{ url_for('search.view_document') }}?path={{ r.path }}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>
-                    <a href="{{ url_for('search.download_document') }}?path={{ r.path }}" class="btn btn-sm btn-outline-success">Download</a>
+        <div role="region" aria-labelledby="results-heading">
+            {% for r in results %}
+            <article class="card mb-4 border-0 shadow-sm" aria-labelledby="result-title-{{ loop.index }}">
+                <div class="card-body">
+                    <h3 id="result-title-{{ loop.index }}" class="text-primary mb-1">{{ r.title }}</h3>
+                    <p class="text-muted small mb-2">
+                        <span class="visually-hidden">Relevance score: </span>{{ r.score }}
+                    </p>
+                    <div class="card-text result-snippet" aria-label="Document snippet">
+                        {{ r.snippet|safe }}
+                    </div>
+                    <div class="btn-group mt-2" role="group" aria-label="Document actions">
+                        <a href="{{ url_for('search.view_document') }}?path={{ r.path }}" target="_blank"
+                           class="btn btn-sm btn-outline-primary"
+                           aria-label="View {{ r.title }} document">
+                            View
+                        </a>
+                        <a href="{{ url_for('search.download_document') }}?path={{ r.path }}"
+                           class="btn btn-sm btn-outline-success"
+                           aria-label="Download {{ r.title }} document">
+                            Download
+                        </a>
+                    </div>
                 </div>
-            </div>
+            </article>
+            {% endfor %}
         </div>
-        {% endfor %}
     {% else %}
-        <p class="text-muted">No documents matched your query.</p>
+        <p class="text-muted" role="status" aria-live="polite">
+            No documents matched your query.
+        </p>
     {% endif %}
 </div>
 {% endblock %}
@@ -52,8 +79,11 @@
 <script src="{{ url_for('static', filename='js/spellcheck.js') }}"></script>
 <script>
 function clearSearch() {
-    document.getElementById("search_input").value = "";
-    document.getElementById("highlighted_text").innerHTML = "";
+    const searchInput = document.getElementById("search_input");
+    const highlightedText = document.getElementById("highlighted_text");
+    searchInput.value = "";
+    highlightedText.innerHTML = "";
+    searchInput.focus();
 }
 </script>
 {% endblock %}
