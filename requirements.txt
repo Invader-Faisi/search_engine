@@ -1,0 +1,9 @@
+Flask
+Flask-Login
+Flask-SQLAlchemy
+Whoosh
+python-dotenv
+passlib
+pyspellchecker
+python-docx
+PyPDF2

@@ -1,0 +1,109 @@
+body {
+    background-color: #fcfcfc;
+    color: #202124;
+}
+
+.search-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-top: 60px;
+}
+
+.logo-text {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+    letter-spacing: -1.5px;
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+}
+
+.input-style {
+    width: 100%;
+    height: 48px;
+    padding: 0 25px; /* Ensure this is identical in both */
+    font-size: 16px;
+    border-radius: 24px;
+    border: 1px solid #dfe1e5;
+    box-sizing: border-box;
+    line-height: 46px; /* This centers the text vertically */
+    outline: none;
+    display: block;
+    background: transparent;
+}
+
+#search_input {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+}
+
+.backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    color: transparent;
+    pointer-events: none;
+    white-space: pre;
+    overflow: hidden;
+    border: 1px solid transparent; /* Matches input border thickness */
+
+    /* THE FIX: Use flexbox to force the text to the exact center vertically */
+    display: flex;
+    align-items: center;
+    padding: 0 25px; /* MUST match .input-style exactly */
+    text-align: left;
+}
+
+.misspelled {
+    text-decoration: underline;
+    text-decoration-color: #d93025;
+    text-decoration-style: wavy;
+    pointer-events: auto;
+    cursor: help;
+    line-height: normal;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.spellcheck-menu {
+    position: absolute;
+    background: #ffffff !important;
+    color: #202124 !important;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: none;
+    z-index: 9999;
+    min-width: 160px;
+    padding: 5px 0;
+}
+
+.suggestion-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.suggestion-item:hover {
+    background-color: #f8f9fa;
+    color: #1a73e8;
+}
+
+.highlight-keyword {
+    color: #198754 !important;
+    font-weight: bold !important;
+    text-transform: none !important;
+}
+
+.result-snippet {
+    line-height: 1.6;
+    color: #4d5156;
+}
